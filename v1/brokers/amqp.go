@@ -160,10 +160,13 @@ func (b *AMQPBroker) consume(deliveries <-chan amqp.Delivery, concurrency int, t
 
 	pool := semaphore.NewWeighted(int64(concurrency))
 	errorsChan := make(chan error)
+	quitChan := make(chan struct{})
 
 	// Use wait group to make sure task processing completes on interrupt signal
 	var wg sync.WaitGroup
 	defer wg.Wait()
+	// Signal to spawned goroutines that error are no longer handled
+	defer close(quitChan)
 
 	for {
 		select {
@@ -172,8 +175,8 @@ func (b *AMQPBroker) consume(deliveries <-chan amqp.Delivery, concurrency int, t
 		case err := <-errorsChan:
 			return err
 		case d := <-deliveries:
-			// get worker from pool (blocks until one is available)
-			// shouldn't return any errors since it fails only if the context is
+			// Geting worker from pool (blocks until one is available)
+			// This shouldn't return any errors since it fails only if the context is
 			// canceled/contains error but just in case we handle failure anyway
 			if err := pool.Acquire(context.Background(), 1); err != nil {
 				return err
@@ -191,7 +194,12 @@ func (b *AMQPBroker) consume(deliveries <-chan amqp.Delivery, concurrency int, t
 				pool.Release(1)
 
 				if err != nil {
-					errorsChan <- err
+					select {
+					case <-quitChan:
+						// main loop exited; ignoring error
+					case errorsChan <- err:
+						// propagated error to main loop
+					}
 				}
 			}()
 		case <-b.stopChan:
