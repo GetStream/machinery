@@ -178,7 +178,7 @@ func (b *AMQPBroker) consume(deliveries <-chan amqp.Delivery, concurrency int, t
 			// Geting worker from pool (blocks until one is available)
 			// This shouldn't return any errors since it fails only if the context is
 			// canceled/contains error but just in case we handle failure anyway
-			if err := pool.Acquire(context.Background(), 1); err != nil {
+			if err := pool.Acquire(context.TODO(), 1); err != nil {
 				return err
 			}
 
@@ -194,11 +194,17 @@ func (b *AMQPBroker) consume(deliveries <-chan amqp.Delivery, concurrency int, t
 				pool.Release(1)
 
 				if err != nil {
-					select {
-					case <-quitChan:
-						// main loop exited; ignoring error
-					case errorsChan <- err:
-						// propagated error to main loop
+					for {
+						select {
+						case <-quitChan:
+							// main loop exited; ignoring error
+							return
+						case errorsChan <- err:
+							// propagated error to main loop
+							return
+						default:
+							// everything is blocked can't do anything but spin
+						}
 					}
 				}
 			}()
