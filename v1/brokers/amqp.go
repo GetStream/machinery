@@ -1,11 +1,15 @@
 package brokers
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"sync"
 	"time"
+
+	"golang.org/x/sync/semaphore"
 
 	"github.com/GetStream/machinery/v1/common"
 	"github.com/GetStream/machinery/v1/config"
@@ -148,15 +152,13 @@ func (b *AMQPBroker) Publish(signature *tasks.Signature) error {
 // consume takes delivered messages from the channel and manages a worker pool
 // to process tasks concurrently
 func (b *AMQPBroker) consume(deliveries <-chan amqp.Delivery, concurrency int, taskProcessor TaskProcessor) error {
-	pool := make(chan struct{}, concurrency)
+	if concurrency < 1 {
+		//XXX: assuming no constraints on concurrency
+		//     (modeled by having an unrealistically high max worker cap)
+		concurrency = math.MaxInt64
+	}
 
-	// initialize worker pool with maxWorkers workers
-	go func() {
-		for i := 0; i < concurrency; i++ {
-			pool <- struct{}{}
-		}
-	}()
-
+	pool := semaphore.NewWeighted(int64(concurrency))
 	errorsChan := make(chan error)
 
 	// Use wait group to make sure task processing completes on interrupt signal
@@ -170,9 +172,11 @@ func (b *AMQPBroker) consume(deliveries <-chan amqp.Delivery, concurrency int, t
 		case err := <-errorsChan:
 			return err
 		case d := <-deliveries:
-			if concurrency > 0 {
-				// get worker from pool (blocks until one is available)
-				<-pool
+			// get worker from pool (blocks until one is available)
+			// shouldn't return any errors since it fails only if the context is
+			// canceled/contains error but just in case we handle failure anyway
+			if err := pool.Acquire(context.Background(), 1); err != nil {
+				return err
 			}
 
 			wg.Add(1)
@@ -180,15 +184,14 @@ func (b *AMQPBroker) consume(deliveries <-chan amqp.Delivery, concurrency int, t
 			// Consume the task inside a gotourine so multiple tasks
 			// can be processed concurrently
 			go func() {
-				defer wg.Done()
+				err := b.consumeOne(d, taskProcessor)
 
-				if err := b.consumeOne(d, taskProcessor); err != nil {
+				wg.Done()
+				// give worker back to pool
+				pool.Release(1)
+
+				if err != nil {
 					errorsChan <- err
-				}
-
-				if concurrency > 0 {
-					// give worker back to pool
-					pool <- struct{}{}
 				}
 			}()
 		case <-b.stopChan:
