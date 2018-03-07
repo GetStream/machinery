@@ -75,6 +75,18 @@
   version = "v1.20.0"
 
 [[projects]]
+  branch = "master"
+  name = "golang.org/x/net"
+  packages = ["context"]
+  revision = "d25186b37f34ebdbbea8f488ef055638dfab272d"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/sync"
+  packages = ["semaphore"]
+  revision = "fd80eb99c8f653c847d294a001bdf2a3a6f768f5"
+
+[[projects]]
   branch = "v2"
   name = "gopkg.in/mgo.v2"
   packages = [
@@ -95,6 +107,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "6030c8d108f2e3ce18af8229cf6a585e076339cedb3322f81135c2b8d4783543"
+  inputs-digest = "77ce3d1ab236d338c684ee6dce0519c5d8c7709e22102c097c029c4b62ff3490"
   solver-name = "gps-cdcl"
   solver-version = 1
