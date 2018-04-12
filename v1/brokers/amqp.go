@@ -16,7 +16,11 @@ import (
 	"github.com/GetStream/machinery/v1/log"
 	"github.com/GetStream/machinery/v1/tasks"
 	"github.com/streadway/amqp"
+	"github.com/GetStream/go-lzo"
+	"bytes"
 )
+
+const encodingLZO = "lzo"
 
 // AMQPBroker represents an AMQP broker
 type AMQPBroker struct {
@@ -30,6 +34,11 @@ func NewAMQPBroker(cnf *config.Config) Interface {
 		Broker:        New(cnf),
 		AMQPConnector: common.NewAMQPConnector(cnf.Broker, cnf.TLSConfig),
 	}
+}
+
+
+func (b *AMQPBroker) shouldCompress(payload []byte) bool {
+	return len(payload) > 100
 }
 
 // StartConsuming enters a loop and waits for incoming messages
@@ -58,7 +67,7 @@ func (b *AMQPBroker) StartConsuming(consumerTag string, concurrency int, taskPro
 		0,     // prefetch size
 		false, // global
 	); err != nil {
-		return b.retry, fmt.Errorf("Channel qos error: %s", err)
+		return b.retry, fmt.Errorf("channel qos error: %s", err)
 	}
 
 	deliveries, err := channel.Consume(
@@ -71,7 +80,7 @@ func (b *AMQPBroker) StartConsuming(consumerTag string, concurrency int, taskPro
 		nil,         // arguments
 	)
 	if err != nil {
-		return b.retry, fmt.Errorf("Queue consume error: %s", err)
+		return b.retry, fmt.Errorf("queue consume error: %s", err)
 	}
 
 	log.INFO.Print("[*] Waiting for messages. To exit press CTRL+C")
@@ -109,6 +118,8 @@ func (b *AMQPBroker) Publish(signature *tasks.Signature) error {
 		return fmt.Errorf("JSON marshal error: %s", err)
 	}
 
+	compressed := b.shouldCompress(message)
+
 	channel, _, confirmsChan, err := b.Exchange(
 		b.cnf.AMQP.Exchange,     // exchange name
 		b.cnf.AMQP.ExchangeType, // exchange type
@@ -125,17 +136,24 @@ func (b *AMQPBroker) Publish(signature *tasks.Signature) error {
 	}
 	defer channel.Close()
 
+	publishing := amqp.Publishing{
+		Headers:      amqp.Table(signature.Headers),
+		ContentType:  "application/json",
+		Body:         lzo.Compress1X(message),
+		DeliveryMode: amqp.Persistent,
+	}
+
+	if compressed {
+		publishing.Body = message
+		publishing.ContentEncoding = encodingLZO
+	}
+
 	if err := channel.Publish(
 		b.cnf.AMQP.Exchange,  // exchange name
 		signature.RoutingKey, // routing key
 		false,                // mandatory
 		false,                // immediate
-		amqp.Publishing{
-			Headers:      amqp.Table(signature.Headers),
-			ContentType:  "application/json",
-			Body:         message,
-			DeliveryMode: amqp.Persistent,
-		},
+		publishing,
 	); err != nil {
 		return err
 	}
@@ -175,7 +193,7 @@ func (b *AMQPBroker) consume(deliveries <-chan amqp.Delivery, concurrency int, t
 		case err := <-errorsChan:
 			return err
 		case d := <-deliveries:
-			// Geting worker from pool (blocks until one is available)
+			// Getting worker from pool (blocks until one is available)
 			// This shouldn't return any errors since it fails only if the context is
 			// canceled/contains error but just in case we handle failure anyway
 			if err := pool.Acquire(context.TODO(), 1); err != nil {
@@ -184,7 +202,7 @@ func (b *AMQPBroker) consume(deliveries <-chan amqp.Delivery, concurrency int, t
 
 			wg.Add(1)
 
-			// Consume the task inside a gotourine so multiple tasks
+			// Consume the task inside a go routine so multiple tasks
 			// can be processed concurrently
 			go func() {
 				err := b.consumeOne(d, taskProcessor)
@@ -216,17 +234,31 @@ func (b *AMQPBroker) consume(deliveries <-chan amqp.Delivery, concurrency int, t
 
 // consumeOne processes a single message using TaskProcessor
 func (b *AMQPBroker) consumeOne(d amqp.Delivery, taskProcessor TaskProcessor) error {
+	var err error
+
 	if len(d.Body) == 0 {
 		d.Nack(false, false)                           // multiple, requeue
-		return errors.New("Received an empty message") // RabbitMQ down?
+		return errors.New("received an empty message") // RabbitMQ down?
 	}
 
 	log.INFO.Printf("Received new message: %s", d.Body)
 
+	body := d.Body
+
+	// Decompress body if necessary
+	if d.ContentEncoding == encodingLZO {
+		r := bytes.NewReader(body)
+		body, err = lzo.Decompress1X(r, len(body), 0)
+		if err != nil {
+			d.Nack(false, false)
+		}
+		return err
+	}
+
 	// Unmarshal message body into signature struct
 	signature := new(tasks.Signature)
-	if err := json.Unmarshal(d.Body, signature); err != nil {
-		d.Nack(false, false) // multiple, requeue
+	if err := json.Unmarshal(body, signature); err != nil {
+		d.Nack(false, false)
 		return err
 	}
 
@@ -246,7 +278,7 @@ func (b *AMQPBroker) consumeOne(d amqp.Delivery, taskProcessor TaskProcessor) er
 	return taskProcessor.Process(signature)
 }
 
-// delay a task by delayDuration miliseconds, the way it works is a new queue
+// delay a task by delayDuration milliseconds, the way it works is a new queue
 // is created without any consumers, the message is then published to this queue
 // with appropriate ttl expiration headers, after the expiration, it is sent to
 // the proper queue with consumers

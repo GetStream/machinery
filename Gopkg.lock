@@ -3,6 +3,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/GetStream/go-lzo"
+  packages = ["."]
+  revision = "affec0788321cffe2c68821be1e07e87127b17f0"
+
+[[projects]]
+  branch = "master"
   name = "github.com/RichardKnop/logging"
   packages = ["."]
   revision = "66aaaba182584c20ec574b064975974f92f0936a"
@@ -33,6 +39,12 @@
   packages = ["."]
   revision = "98dabdf1c8574561bf976911c14ff652c47b1ddf"
   version = "v1.0.1"
+
+[[projects]]
+  name = "github.com/golang/protobuf"
+  packages = ["proto"]
+  revision = "925541529c1fa6821df4e44ce2723319eb2be768"
+  version = "v1.0.0"
 
 [[projects]]
   name = "github.com/kelseyhightower/envconfig"
@@ -87,6 +99,23 @@
   revision = "fd80eb99c8f653c847d294a001bdf2a3a6f768f5"
 
 [[projects]]
+  name = "google.golang.org/appengine"
+  packages = [
+    ".",
+    "channel",
+    "internal",
+    "internal/app_identity",
+    "internal/base",
+    "internal/channel",
+    "internal/datastore",
+    "internal/log",
+    "internal/modules",
+    "internal/remote_api"
+  ]
+  revision = "150dc57a1b433e64154302bdc40b6bb8aefa313a"
+  version = "v1.0.0"
+
+[[projects]]
   branch = "v2"
   name = "gopkg.in/mgo.v2"
   packages = [
@@ -107,6 +136,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "77ce3d1ab236d338c684ee6dce0519c5d8c7709e22102c097c029c4b62ff3490"
+  inputs-digest = "2c4dd5c5cc4b018919a54c629dd7bc76bd60e7c6b64cb7092de07513272d4266"
   solver-name = "gps-cdcl"
   solver-version = 1
