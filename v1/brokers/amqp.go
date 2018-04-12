@@ -144,7 +144,7 @@ func (b *AMQPBroker) Publish(signature *tasks.Signature) error {
 	}
 
 	if compressed {
-		publishing.Body = message
+		publishing.Body = lzo.Compress1X(message)
 		publishing.ContentEncoding = encodingLZO
 	}
 
@@ -164,7 +164,7 @@ func (b *AMQPBroker) Publish(signature *tasks.Signature) error {
 		return nil
 	}
 
-	return fmt.Errorf("Failed delivery of delivery tag: %v", confirmed.DeliveryTag)
+	return fmt.Errorf("failed delivery of delivery tag: %v", confirmed.DeliveryTag)
 }
 
 // consume takes delivered messages from the channel and manages a worker pool
