@@ -241,7 +241,7 @@ func (b *AMQPBroker) consumeOne(d amqp.Delivery, taskProcessor TaskProcessor) er
 		return errors.New("received an empty message") // RabbitMQ down?
 	}
 
-	log.INFO.Printf("Received new message: %s", d.Body)
+	log.INFO.Printf("Received new message")
 
 	body := d.Body
 
