@@ -139,7 +139,7 @@ func (b *AMQPBroker) Publish(signature *tasks.Signature) error {
 	publishing := amqp.Publishing{
 		Headers:      amqp.Table(signature.Headers),
 		ContentType:  "application/json",
-		Body:         lzo.Compress1X(message),
+		Body:         message,
 		DeliveryMode: amqp.Persistent,
 	}
 
