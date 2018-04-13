@@ -251,8 +251,8 @@ func (b *AMQPBroker) consumeOne(d amqp.Delivery, taskProcessor TaskProcessor) er
 		body, err = lzo.Decompress1X(r, len(body), 0)
 		if err != nil {
 			d.Nack(false, false)
+			return err
 		}
-		return err
 	}
 
 	// Unmarshal message body into signature struct
