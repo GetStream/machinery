@@ -41,12 +41,6 @@
   version = "v1.0.1"
 
 [[projects]]
-  name = "github.com/golang/protobuf"
-  packages = ["proto"]
-  revision = "925541529c1fa6821df4e44ce2723319eb2be768"
-  version = "v1.0.0"
-
-[[projects]]
   name = "github.com/kelseyhightower/envconfig"
   packages = ["."]
   revision = "f611eb38b3875cc3bd991ca91c51d06446afa14c"
@@ -99,23 +93,6 @@
   revision = "fd80eb99c8f653c847d294a001bdf2a3a6f768f5"
 
 [[projects]]
-  name = "google.golang.org/appengine"
-  packages = [
-    ".",
-    "channel",
-    "internal",
-    "internal/app_identity",
-    "internal/base",
-    "internal/channel",
-    "internal/datastore",
-    "internal/log",
-    "internal/modules",
-    "internal/remote_api"
-  ]
-  revision = "150dc57a1b433e64154302bdc40b6bb8aefa313a"
-  version = "v1.0.0"
-
-[[projects]]
   branch = "v2"
   name = "gopkg.in/mgo.v2"
   packages = [
@@ -136,6 +113,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "2c4dd5c5cc4b018919a54c629dd7bc76bd60e7c6b64cb7092de07513272d4266"
+  inputs-digest = "ac96b301a3cedd1aa8b006cbcf9b3f53019ed7c8721384fe5b98ffdb4d060f88"
   solver-name = "gps-cdcl"
   solver-version = 1

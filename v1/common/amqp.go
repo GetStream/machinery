@@ -193,100 +193,80 @@ func (ac *AMQPConnector) ErrChan() chan error {
 }
 
 type amqpConnectionManager struct {
-	url         string
-	tlsConfig   *tls.Config
-	conn        *amqp.Connection
-	newConnChan chan struct{}
-	errChan     chan error
-	mu          *sync.RWMutex
-	resetChan   chan struct{}
-	wg          *sync.WaitGroup
+	url       string
+	tlsConfig *tls.Config
+	conn      *amqp.Connection
+	connChan  chan struct{}
+	errChan   chan error
+	mu        *sync.Mutex
 
 	connectionRetryTimeout time.Duration
 	connectionMaxRetries   int
 }
 
 func newAMQPConnectionManager(url string, tlsConfig *tls.Config) *amqpConnectionManager {
-	return &amqpConnectionManager{
-		url:         url,
-		tlsConfig:   tlsConfig,
-		errChan:     make(chan error),
-		mu:          &sync.RWMutex{},
-		newConnChan: make(chan struct{}),
-		resetChan:   make(chan struct{}),
-		wg:          &sync.WaitGroup{},
-
+	m := &amqpConnectionManager{
+		url:       url,
+		tlsConfig: tlsConfig,
+		errChan:   make(chan error),
+		connChan:  make(chan struct{}),
+		mu:        &sync.Mutex{},
 		connectionRetryTimeout: 5 * time.Second,
 		connectionMaxRetries:   3,
 	}
+	close(m.connChan)
+	return m
 }
 
 func (m *amqpConnectionManager) get() (*amqp.Connection, error) {
-	m.mu.RLock()
-
-	if m.conn == nil {
-		m.mu.RUnlock()
-		return m.makeConnection()
-	}
-
-	select {
-	case <-m.newConnChan:
-		m.mu.RUnlock()
-		return m.makeConnection()
-	default:
-		m.mu.RUnlock()
-		return m.conn, nil
-	}
-}
-
-func (m *amqpConnectionManager) makeConnection() (*amqp.Connection, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-
-	if m.conn != nil {
-		m.conn.Close() // this is most likely useless, but just to be sure
-		m.conn = nil
-	}
-
-	retries := 0
-	for m.conn == nil {
-		retries++
-		conn, err := amqp.DialTLS(m.url, m.tlsConfig)
+	select {
+	case <-m.connChan:
+		// create a new connection and store it
+		conn, err := m.connect()
 		if err != nil {
-			if retries >= m.connectionMaxRetries {
-				return nil, wrapError("too many retries", err)
-			}
-			time.Sleep(m.connectionRetryTimeout)
-			continue // TODO log warning here?
+			return nil, err
 		}
 		m.conn = conn
+		m.connChan = make(chan struct{})
+		// intercept close events
+		m.notifyClose()
+	default:
 	}
-
-	// set the new connection and listen for closes
-	m.waitForConnectionClose()
-
 	return m.conn, nil
 }
 
-// waitForConnectionClose adds a close listener on the current connection.
-// when the listener triggers, a goroutine sends the obtained error
-// to the potential consumers listening on m.errChan, and sends a message the newConnChan
-// channel so to trigger the generation of a new connection.
-func (m *amqpConnectionManager) waitForConnectionClose() {
-	connErrChan := m.conn.NotifyClose(make(chan *amqp.Error, 1))
-	m.wg.Add(1)
+func (m *amqpConnectionManager) connect() (conn *amqp.Connection, err error) {
+	for retry := 0; retry < m.connectionMaxRetries; retry++ {
+		conn, err = amqp.DialTLS(m.url, m.tlsConfig)
+		if err == nil {
+			return conn, nil
+		}
+		time.Sleep(m.connectionRetryTimeout)
+	}
+	return nil, wrapError("too many retries", err)
+}
+
+func (m *amqpConnectionManager) notifyClose() {
+	closeChan := m.conn.NotifyClose(make(chan *amqp.Error, 1))
 	go func() {
-		defer m.wg.Done()
 		select {
-		case <-m.resetChan:
+		case <-m.connChan:
 			return
-		case connErr := <-connErrChan:
-			go func() {
-				m.errChan <- connErr
-			}()
-			m.newConnChan <- struct{}{}
+		case err := <-closeChan:
+			m.errChan <- err
+			m.closeConnChan()
 		}
 	}()
+}
+
+func (m *amqpConnectionManager) closeConnChan() { // do not close the connection channel if already closed
+	select {
+	case <-m.connChan:
+	default:
+		close(m.connChan)
+	}
 }
 
 func (m *amqpConnectionManager) reset() {
@@ -296,12 +276,7 @@ func (m *amqpConnectionManager) reset() {
 		return
 	}
 
-	// ensure that waitForConnectionClose's goroutine is not hanging and doesn't add
-	// unwanted messages to the newConnChan channel
-	close(m.resetChan)
-	m.wg.Wait()
-
-	m.resetChan = make(chan struct{})
+	m.closeConnChan()
 	m.conn.Close()
 	m.conn = nil
 }
