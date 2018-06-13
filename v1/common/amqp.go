@@ -255,10 +255,18 @@ func (m *amqpConnectionManager) notifyClose() {
 		case <-m.connChan:
 			return
 		case err := <-closeChan:
-			m.errChan <- err
 			m.closeConnChan()
+			go m.setOrReplaceError(err)
 		}
 	}()
+}
+
+func (m *amqpConnectionManager) setOrReplaceError(err error) {
+	select {
+	case <-m.errChan:
+	default:
+	}
+	m.errChan <- err
 }
 
 func (m *amqpConnectionManager) closeConnChan() { // do not close the connection channel if already closed
