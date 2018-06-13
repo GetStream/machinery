@@ -247,6 +247,7 @@ func (m *amqpConnectionManager) connect() (conn *amqp.Connection, err error) {
 		}()
 		select {
 		case <-timer.C:
+			err = fmt.Errorf("dial timeout")
 		case <-done:
 			timer.Stop()
 			if err == nil {
