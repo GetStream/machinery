@@ -196,7 +196,6 @@ type amqpConnectionManager struct {
 	url       string
 	tlsConfig *tls.Config
 	conn      *amqp.Connection
-	connChan  chan struct{}
 	errChan   chan error
 	mu        *sync.Mutex
 
@@ -205,34 +204,26 @@ type amqpConnectionManager struct {
 }
 
 func newAMQPConnectionManager(url string, tlsConfig *tls.Config) *amqpConnectionManager {
-	m := &amqpConnectionManager{
+	return &amqpConnectionManager{
 		url:       url,
 		tlsConfig: tlsConfig,
 		errChan:   make(chan error),
-		connChan:  make(chan struct{}),
 		mu:        &sync.Mutex{},
 		connectionRetryTimeout: 5 * time.Second,
 		connectionMaxRetries:   3,
 	}
-	close(m.connChan)
-	return m
 }
 
 func (m *amqpConnectionManager) get() (*amqp.Connection, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	select {
-	case <-m.connChan:
-		// create a new connection and store it
+	if m.conn == nil {
 		conn, err := m.connect()
 		if err != nil {
 			return nil, err
 		}
 		m.conn = conn
-		m.connChan = make(chan struct{})
-		// intercept close events
 		m.notifyClose()
-	default:
 	}
 	return m.conn, nil
 }
@@ -251,13 +242,9 @@ func (m *amqpConnectionManager) connect() (conn *amqp.Connection, err error) {
 func (m *amqpConnectionManager) notifyClose() {
 	closeChan := m.conn.NotifyClose(make(chan *amqp.Error, 1))
 	go func() {
-		select {
-		case <-m.connChan:
-			return
-		case err := <-closeChan:
-			m.closeConnChan()
-			go m.setOrReplaceError(err)
-		}
+		err := <-closeChan
+		go m.setOrReplaceError(err)
+		m.reset()
 	}()
 }
 
@@ -269,22 +256,12 @@ func (m *amqpConnectionManager) setOrReplaceError(err error) {
 	m.errChan <- err
 }
 
-func (m *amqpConnectionManager) closeConnChan() { // do not close the connection channel if already closed
-	select {
-	case <-m.connChan:
-	default:
-		close(m.connChan)
-	}
-}
-
 func (m *amqpConnectionManager) reset() {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	if m.conn == nil {
 		return
 	}
-
-	m.closeConnChan()
 	m.conn.Close()
 	m.conn = nil
 }
