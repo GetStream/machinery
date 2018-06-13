@@ -239,22 +239,11 @@ func (m *amqpConnectionManager) get() (*amqp.Connection, error) {
 
 func (m *amqpConnectionManager) connect() (conn *amqp.Connection, err error) {
 	for retry := 0; retry < m.connectionMaxRetries; retry++ {
-		timer := time.NewTimer(m.connectionRetryTimeout)
-		done := make(chan struct{})
-		go func() {
-			conn, err = amqp.DialTLS(m.url, m.tlsConfig)
-			close(done)
-		}()
-		select {
-		case <-timer.C:
-			err = fmt.Errorf("dial timeout")
-		case <-done:
-			timer.Stop()
-			if err == nil {
-				return conn, nil
-			}
-			time.Sleep(m.connectionRetryTimeout)
+		conn, err = amqp.DialTLS(m.url, m.tlsConfig)
+		if err == nil {
+			return conn, nil
 		}
+		time.Sleep(m.connectionRetryTimeout)
 	}
 	return nil, wrapError("too many retries", err)
 }
