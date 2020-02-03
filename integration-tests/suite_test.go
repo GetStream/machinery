@@ -3,22 +3,15 @@ package integration_test
 import (
 	"errors"
 	"log"
-	"reflect"
-	"sort"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 
 	"github.com/GetStream/machinery/v1"
 	"github.com/GetStream/machinery/v1/config"
 	"github.com/GetStream/machinery/v1/tasks"
-	"github.com/stretchr/testify/assert"
 )
-
-type ascendingInt64s []int64
-
-func (a ascendingInt64s) Len() int           { return len(a) }
-func (a ascendingInt64s) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a ascendingInt64s) Less(i, j int) bool { return a[i] < a[j] }
 
 func testAll(server *machinery.Server, t *testing.T) {
 	testSendTask(server, t)
@@ -40,7 +33,7 @@ func testSendTask(server *machinery.Server, t *testing.T) {
 		t.Error(err)
 	}
 
-	results, err := asyncResult.Get(time.Duration(time.Millisecond * 5))
+	results, err := asyncResult.Get(5 * time.Millisecond)
 	if err != nil {
 		t.Error(err)
 	}
@@ -72,7 +65,7 @@ func testSendGroup(server *machinery.Server, t *testing.T, sendConcurrency int) 
 	actualResults := make([]int64, 3)
 
 	for i, asyncResult := range asyncResults {
-		results, err := asyncResult.Get(time.Duration(time.Millisecond * 5))
+		results, err := asyncResult.Get(5 * time.Millisecond)
 		if err != nil {
 			t.Error(err)
 		}
@@ -88,15 +81,7 @@ func testSendGroup(server *machinery.Server, t *testing.T, sendConcurrency int) 
 		actualResults[i] = intResult
 	}
 
-	sort.Sort(ascendingInt64s(actualResults))
-
-	if !reflect.DeepEqual(expectedResults, actualResults) {
-		t.Errorf(
-			"expected results = %v, actual results = %v",
-			expectedResults,
-			actualResults,
-		)
-	}
+	requireSortedEqual(t, expectedResults, actualResults)
 }
 
 func testSendChain(server *machinery.Server, t *testing.T) {
@@ -108,7 +93,7 @@ func testSendChain(server *machinery.Server, t *testing.T) {
 		t.Error(err)
 	}
 
-	results, err := chainAsyncResult.Get(time.Duration(time.Millisecond * 5))
+	results, err := chainAsyncResult.Get(5 * time.Millisecond)
 	if err != nil {
 		t.Error(err)
 	}
@@ -136,7 +121,7 @@ func testSendChord(server *machinery.Server, t *testing.T) {
 		t.Error(err)
 	}
 
-	results, err := chordAsyncResult.Get(time.Duration(time.Millisecond * 5))
+	results, err := chordAsyncResult.Get(5 * time.Millisecond)
 	if err != nil {
 		t.Error(err)
 	}
@@ -162,7 +147,7 @@ func testReturnJustError(server *machinery.Server, t *testing.T) {
 		t.Error(err)
 	}
 
-	results, err := asyncResult.Get(time.Duration(time.Millisecond * 5))
+	results, err := asyncResult.Get(5 * time.Millisecond)
 	if len(results) != 0 {
 		t.Errorf("Number of results returned = %d. Wanted %d", len(results), 0)
 	}
@@ -175,7 +160,7 @@ func testReturnJustError(server *machinery.Server, t *testing.T) {
 		t.Error(err)
 	}
 
-	results, err = asyncResult.Get(time.Duration(time.Millisecond * 5))
+	results, err = asyncResult.Get(5 * time.Millisecond)
 	if len(results) != 0 {
 		t.Errorf("Number of results returned = %d. Wanted %d", len(results), 0)
 	}
@@ -191,7 +176,7 @@ func testReturnMultipleValues(server *machinery.Server, t *testing.T) {
 		t.Error(err)
 	}
 
-	results, err := asyncResult.Get(time.Duration(time.Millisecond * 5))
+	results, err := asyncResult.Get(5 * time.Millisecond)
 	if err != nil {
 		t.Error(err)
 	}
@@ -224,7 +209,7 @@ func testReturnMultipleValues(server *machinery.Server, t *testing.T) {
 		t.Error(err)
 	}
 
-	results, err = asyncResult.Get(time.Duration(time.Millisecond * 5))
+	results, err = asyncResult.Get(5 * time.Millisecond)
 	if len(results) != 0 {
 		t.Errorf("Number of results returned = %d. Wanted %d", len(results), 0)
 	}
@@ -238,7 +223,7 @@ func testPanic(server *machinery.Server, t *testing.T) {
 		t.Error(err)
 	}
 
-	results, err := asyncResult.Get(time.Duration(time.Millisecond * 5))
+	results, err := asyncResult.Get(5 * time.Millisecond)
 	if len(results) != 0 {
 		t.Errorf("Number of results returned = %d. Wanted %d", len(results), 0)
 	}
@@ -247,14 +232,14 @@ func testPanic(server *machinery.Server, t *testing.T) {
 
 func testDelay(server *machinery.Server, t *testing.T) {
 	now := time.Now().UTC()
-	eta := now.Add(100 * (time.Millisecond))
+	eta := now.Add(100 * time.Millisecond)
 	task := newDelayTask(eta)
 	asyncResult, err := server.SendTask(task)
 	if err != nil {
 		t.Error(err)
 	}
 
-	results, err := asyncResult.Get(time.Duration(time.Millisecond * 5))
+	results, err := asyncResult.Get(5 * time.Millisecond)
 	if err != nil {
 		t.Error(err)
 	}
@@ -288,7 +273,7 @@ func testSetup(cnf *config.Config) *machinery.Server {
 		log.Fatal(err, "Could not initialize server")
 	}
 
-	tasks := map[string]interface{}{
+	taskSignatures := map[string]interface{}{
 		"add": func(args ...int64) (int64, error) {
 			sum := int64(0)
 			for _, arg := range args {
@@ -325,7 +310,7 @@ func testSetup(cnf *config.Config) *machinery.Server {
 			return time.Now().UTC().UnixNano(), nil
 		},
 	}
-	server.RegisterTasks(tasks)
+	server.RegisterTasks(taskSignatures)
 
 	return server
 }

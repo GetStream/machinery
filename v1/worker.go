@@ -2,12 +2,11 @@ package machinery
 
 import (
 	"fmt"
-	"strings"
-	"time"
-
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
+	"time"
 
 	"github.com/GetStream/machinery/v1/backends"
 	"github.com/GetStream/machinery/v1/log"
@@ -46,9 +45,9 @@ func (worker *Worker) Launch() error {
 
 	go func() {
 		for {
-			retry, err := broker.StartConsuming(worker.ConsumerTag, worker.Concurrency, worker)
+			shouldRetry, err := broker.StartConsuming(worker.ConsumerTag, worker.Concurrency, worker)
 
-			if retry {
+			if shouldRetry {
 				log.WARNING.Printf("Start consuming error: %s", err)
 			} else {
 				errorsChan <- err // stop the goroutine
@@ -159,7 +158,7 @@ func (worker *Worker) taskSucceeded(signature *tasks.Signature, taskResults []*t
 	// Trigger success callbacks
 
 	for _, successTask := range signature.OnSuccess {
-		if signature.Immutable == false {
+		if !signature.Immutable {
 			// Pass results of the task to success callbacks
 			for _, taskResult := range taskResults {
 				successTask.Args = append([]tasks.Arg{{
@@ -227,7 +226,7 @@ func (worker *Worker) taskSucceeded(signature *tasks.Signature, taskResults []*t
 			return nil
 		}
 
-		if signature.ChordCallback.Immutable == false {
+		if !signature.ChordCallback.Immutable {
 			// Pass results of the task to the chord callback
 			for _, taskResult := range taskState.Results {
 				signature.ChordCallback.Args = append(signature.ChordCallback.Args, tasks.Arg{
@@ -240,11 +239,7 @@ func (worker *Worker) taskSucceeded(signature *tasks.Signature, taskResults []*t
 
 	// Send the chord task
 	_, err = worker.server.SendTask(signature.ChordCallback)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 // taskFailed updates the task state and triggers error callbacks

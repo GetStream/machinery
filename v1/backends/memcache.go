@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/bradfitz/gomemcache/memcache"
+
 	"github.com/GetStream/machinery/v1/config"
 	"github.com/GetStream/machinery/v1/log"
 	"github.com/GetStream/machinery/v1/tasks"
-	"github.com/bradfitz/gomemcache/memcache"
 )
 
 // MemcacheBackend represents a Memcache result backend
@@ -95,11 +96,11 @@ func (b *MemcacheBackend) TriggerChord(groupUUID string) (bool, error) {
 	for groupMeta.Lock {
 		groupMeta, _ = b.getGroupMeta(groupUUID)
 		log.WARNING.Print("Group meta locked, waiting")
-		<-time.After(time.Millisecond * 5)
+		<-time.After(5 * time.Millisecond)
 	}
 
 	// Acquire lock
-	if err = b.lockGroupMeta(groupMeta); err != nil {
+	if err := b.lockGroupMeta(groupMeta); err != nil {
 		return false, err
 	}
 	defer b.unlockGroupMeta(groupMeta)
@@ -110,7 +111,7 @@ func (b *MemcacheBackend) TriggerChord(groupUUID string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	if err = b.getClient().Replace(&memcache.Item{
+	if err := b.getClient().Replace(&memcache.Item{
 		Key:        groupUUID,
 		Value:      encoded,
 		Expiration: b.getExpirationTimestamp(),

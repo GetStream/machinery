@@ -23,25 +23,21 @@ func NewEagerBackend() Interface {
 
 // InitGroup creates and saves a group meta data object
 func (b *EagerBackend) InitGroup(groupUUID string, taskUUIDs []string) error {
-	tasks := make([]string, 0, len(taskUUIDs))
-	// copy every task
-	for _, v := range taskUUIDs {
-		tasks = append(tasks, v)
-	}
+	copied := make([]string, 0, len(taskUUIDs))
 
-	b.groups[groupUUID] = tasks
+	b.groups[groupUUID] = append(copied, taskUUIDs...)
 	return nil
 }
 
 // GroupCompleted returns true if all tasks in a group finished
 func (b *EagerBackend) GroupCompleted(groupUUID string, groupTaskCount int) (bool, error) {
-	tasks, ok := b.groups[groupUUID]
+	taskList, ok := b.groups[groupUUID]
 	if !ok {
 		return false, fmt.Errorf("Group not found: %v", groupUUID)
 	}
 
 	var countSuccessTasks = 0
-	for _, v := range tasks {
+	for _, v := range taskList {
 		t, err := b.GetState(v)
 		if err != nil {
 			return false, err

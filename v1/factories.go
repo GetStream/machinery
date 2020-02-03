@@ -107,10 +107,8 @@ func BackendFactory(cnf *config.Config) (backends.Interface, error) {
 	return nil, fmt.Errorf("Factory failed with result backend: %v", cnf.ResultBackend)
 }
 
-// ParseRedisURL ...
+// ParseRedisURL parses redis url in the form of redis://pwd@host/db
 func ParseRedisURL(url string) (host, password string, db int, err error) {
-	// redis://pwd@host/db
-
 	parts := strings.Split(url, "redis://")
 	if parts[0] != "" {
 		err = errors.New("No redis scheme found")
@@ -123,7 +121,7 @@ func ParseRedisURL(url string) (host, password string, db int, err error) {
 	parts = strings.Split(parts[1], "@")
 	var hostAndDB string
 	if len(parts) == 2 {
-		//[pwd, host/db]
+		// [pwd, host/db]
 		password = parts[0]
 		hostAndDB = parts[1]
 	} else {
@@ -131,14 +129,14 @@ func ParseRedisURL(url string) (host, password string, db int, err error) {
 	}
 	parts = strings.Split(hostAndDB, "/")
 	if len(parts) == 1 {
-		//[host]
-		host, db = parts[0], 0 //default redis db
+		// [host]
+		host, db = parts[0], 0 // default redis db
 	} else {
-		//[host, db]
+		// [host, db]
 		host = parts[0]
 		db, err = strconv.Atoi(parts[1])
 		if err != nil {
-			db, err = 0, nil //ignore err here
+			db, err = 0, nil // ignore err here
 		}
 	}
 	return

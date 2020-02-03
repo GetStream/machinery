@@ -3,7 +3,7 @@ package tasks
 import (
 	"fmt"
 
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 )
 
 // Chain creates a chain of tasks to be executed one after another

@@ -3,8 +3,9 @@ package tasks_test
 import (
 	"testing"
 
-	"github.com/GetStream/machinery/v1/tasks"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/GetStream/machinery/v1/tasks"
 )
 
 func TestValidateTask(t *testing.T) {

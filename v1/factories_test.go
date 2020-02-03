@@ -5,12 +5,13 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/GetStream/machinery/v1"
 	"github.com/GetStream/machinery/v1/backends"
 	"github.com/GetStream/machinery/v1/brokers"
 	"github.com/GetStream/machinery/v1/config"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestBrokerFactory(t *testing.T) {

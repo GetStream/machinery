@@ -6,7 +6,7 @@ import (
 	"github.com/garyburd/redigo/redis"
 )
 
-// RedisConnector ...
+// RedisConnector is redis connection manager
 type RedisConnector struct{}
 
 // NewPool returns a new pool of Redis connections
@@ -31,7 +31,7 @@ func (rc *RedisConnector) NewPool(socketPath, host, password string, db int) *re
 		},
 		// PINGs connections that have been idle more than 10 seconds
 		TestOnBorrow: func(c redis.Conn, t time.Time) error {
-			if time.Since(t) < time.Duration(10*time.Second) {
+			if time.Since(t) < 10*time.Second {
 				return nil
 			}
 			_, err := c.Do("PING")

@@ -5,8 +5,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/GetStream/machinery/v1/log"
 	"gopkg.in/yaml.v2"
+
+	"github.com/GetStream/machinery/v1/log"
 )
 
 // NewFromYaml creates a config object from YAML file
@@ -76,8 +77,7 @@ func ReadFromFile(cnfPath string) ([]byte, error) {
 }
 
 func fromFile(cnfPath string) (*Config, error) {
-	var newCnf Config
-	newCnf = *cnf
+	newCnf := *cnf
 
 	data, err := ReadFromFile(cnfPath)
 	if err != nil {

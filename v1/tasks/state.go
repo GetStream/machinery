@@ -33,7 +33,7 @@ type GroupMeta struct {
 	Lock           bool     `bson:"lock"`
 }
 
-// NewPendingTaskState ...
+// NewPendingTaskState creates a pending task state
 func NewPendingTaskState(signature *Signature) *TaskState {
 	return &TaskState{
 		TaskUUID: signature.UUID,
@@ -41,7 +41,7 @@ func NewPendingTaskState(signature *Signature) *TaskState {
 	}
 }
 
-// NewReceivedTaskState ...
+// NewReceivedTaskState creates a received task state
 func NewReceivedTaskState(signature *Signature) *TaskState {
 	return &TaskState{
 		TaskUUID: signature.UUID,
@@ -49,7 +49,7 @@ func NewReceivedTaskState(signature *Signature) *TaskState {
 	}
 }
 
-// NewStartedTaskState ...
+// NewStartedTaskState creates a started task state
 func NewStartedTaskState(signature *Signature) *TaskState {
 	return &TaskState{
 		TaskUUID: signature.UUID,
@@ -57,7 +57,7 @@ func NewStartedTaskState(signature *Signature) *TaskState {
 	}
 }
 
-// NewSuccessTaskState ...
+// NewSuccessTaskState creates a successfully finished task state
 func NewSuccessTaskState(signature *Signature, results []*TaskResult) *TaskState {
 	return &TaskState{
 		TaskUUID: signature.UUID,
@@ -66,7 +66,7 @@ func NewSuccessTaskState(signature *Signature, results []*TaskResult) *TaskState
 	}
 }
 
-// NewFailureTaskState ...
+// NewFailureTaskState creates a failed task state
 func NewFailureTaskState(signature *Signature, err string) *TaskState {
 	return &TaskState{
 		TaskUUID: signature.UUID,
@@ -75,7 +75,7 @@ func NewFailureTaskState(signature *Signature, err string) *TaskState {
 	}
 }
 
-// NewRetryTaskState ...
+// NewRetryTaskState creates a retrying task state
 func NewRetryTaskState(signature *Signature) *TaskState {
 	return &TaskState{
 		TaskUUID: signature.UUID,

@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"sync"
 
+	uuid "github.com/satori/go.uuid"
+
 	"github.com/GetStream/machinery/v1/backends"
 	"github.com/GetStream/machinery/v1/brokers"
 	"github.com/GetStream/machinery/v1/config"
 	"github.com/GetStream/machinery/v1/tasks"
-	"github.com/satori/go.uuid"
 )
 
 // Server is the main Machinery object and stores all configuration

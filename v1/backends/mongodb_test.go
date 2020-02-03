@@ -4,10 +4,11 @@ import (
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/GetStream/machinery/v1/backends"
 	"github.com/GetStream/machinery/v1/config"
 	"github.com/GetStream/machinery/v1/tasks"
-	"github.com/stretchr/testify/assert"
 )
 
 var (
@@ -136,7 +137,7 @@ func TestSetStateSuccess(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, tasks.StateSuccess, taskState.State, "Not StateSuccess")
 	assert.Equal(t, resultType, taskState.Results[0].Type, "Wrong result type")
-	assert.Equal(t, float64(resultValue), taskState.Results[0].Value.(float64), "Wrong result value")
+	assert.Equal(t, resultValue, taskState.Results[0].Value.(float64), "Wrong result value")
 }
 
 func TestSetStateFailure(t *testing.T) {

@@ -9,7 +9,7 @@ import (
 	"github.com/streadway/amqp"
 )
 
-// AMQPConnector ...
+// AMQPConnector is amqp connection manager
 type AMQPConnector struct {
 	connManager *amqpConnectionManager
 
@@ -151,7 +151,8 @@ func (ac *AMQPConnector) exchange(exchange, exchangeType, queueName string, queu
 		return nil, amqp.Queue{}, nil, wrapError("channel could not be put into confirm mode", err)
 	}
 
-	return channel, queue, channel.NotifyPublish(make(chan amqp.Confirmation, 1)), nil
+	confirmation := channel.NotifyPublish(make(chan amqp.Confirmation, 1))
+	return channel, queue, confirmation, nil
 }
 
 // DeleteQueue deletes a queue by name
@@ -205,10 +206,10 @@ type amqpConnectionManager struct {
 
 func newAMQPConnectionManager(url string, tlsConfig *tls.Config) *amqpConnectionManager {
 	return &amqpConnectionManager{
-		url:       url,
-		tlsConfig: tlsConfig,
-		errChan:   make(chan error),
-		mu:        &sync.Mutex{},
+		url:                    url,
+		tlsConfig:              tlsConfig,
+		errChan:                make(chan error),
+		mu:                     &sync.Mutex{},
 		connectionRetryTimeout: 5 * time.Second,
 		connectionMaxRetries:   3,
 	}

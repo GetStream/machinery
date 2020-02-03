@@ -6,12 +6,13 @@ import (
 	"sync"
 	"time"
 
+	"github.com/garyburd/redigo/redis"
+	"github.com/go-redsync/redsync"
+
 	"github.com/GetStream/machinery/v1/common"
 	"github.com/GetStream/machinery/v1/config"
 	"github.com/GetStream/machinery/v1/log"
 	"github.com/GetStream/machinery/v1/tasks"
-	"github.com/garyburd/redigo/redis"
-	"github.com/go-redsync/redsync"
 )
 
 var redisDelayedTasksKey = "delayed_tasks"
@@ -201,7 +202,6 @@ func (b *RedisBroker) consume(deliveries <-chan []byte, concurrency int, taskPro
 	}()
 
 	errorsChan := make(chan error, concurrency*2)
-	//errorsChan := make(chan error)
 
 	// Use wait group to make sure task processing completes on interrupt signal
 	var wg sync.WaitGroup

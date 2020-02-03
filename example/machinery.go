@@ -6,12 +6,13 @@ import (
 	"os"
 	"time"
 
+	"github.com/urfave/cli"
+
 	exampletasks "github.com/GetStream/machinery/example/tasks"
 	"github.com/GetStream/machinery/v1"
 	"github.com/GetStream/machinery/v1/config"
 	"github.com/GetStream/machinery/v1/log"
 	"github.com/GetStream/machinery/v1/tasks"
-	"github.com/urfave/cli"
 )
 
 var (
@@ -78,13 +79,11 @@ func startServer() (server *machinery.Server, err error) {
 	}
 
 	// Register tasks
-	tasks := map[string]interface{}{
+	err = server.RegisterTasks(map[string]interface{}{
 		"add":        exampletasks.Add,
 		"multiply":   exampletasks.Multiply,
 		"panic_task": exampletasks.PanicTask,
-	}
-
-	err = server.RegisterTasks(tasks)
+	})
 	return
 }
 
@@ -98,11 +97,7 @@ func worker() error {
 	// Ideally, each worker should have a unique tag (worker1, worker2 etc)
 	worker := server.NewWorker("machinery_worker", 0)
 
-	if err := worker.Launch(); err != nil {
-		return err
-	}
-
-	return nil
+	return worker.Launch()
 }
 
 func send() error {
@@ -118,7 +113,8 @@ func send() error {
 			Name: "add",
 			Args: []tasks.Arg{
 				{
-					Type:  "int64",
+					Type: "int64",
+
 					Value: 1,
 				},
 				{
@@ -141,7 +137,6 @@ func send() error {
 				},
 			},
 		}
-
 		task2 = tasks.Signature{
 			Name: "add",
 			Args: []tasks.Arg{
@@ -186,7 +181,7 @@ func send() error {
 		return fmt.Errorf("Could not send task: %s", err.Error())
 	}
 
-	results, err := asyncResult.Get(time.Duration(time.Millisecond * 5))
+	results, err := asyncResult.Get(5 * time.Millisecond)
 	if err != nil {
 		return fmt.Errorf("Getting task result failed with error: %s", err.Error())
 	}
@@ -207,7 +202,7 @@ func send() error {
 	}
 
 	for _, asyncResult := range asyncResults {
-		results, err = asyncResult.Get(time.Duration(time.Millisecond * 5))
+		results, err = asyncResult.Get(5 * time.Millisecond)
 		if err != nil {
 			return fmt.Errorf("Getting task result failed with error: %s", err.Error())
 		}
@@ -230,7 +225,7 @@ func send() error {
 		return fmt.Errorf("Could not send chord: %s", err.Error())
 	}
 
-	results, err = chordAsyncResult.Get(time.Duration(time.Millisecond * 5))
+	results, err = chordAsyncResult.Get(5 * time.Millisecond)
 	if err != nil {
 		return fmt.Errorf("Getting chord result failed with error: %s", err.Error())
 	}
@@ -246,7 +241,7 @@ func send() error {
 		return fmt.Errorf("Could not send chain: %s", err.Error())
 	}
 
-	results, err = chainAsyncResult.Get(time.Duration(time.Millisecond * 5))
+	results, err = chainAsyncResult.Get(5 * time.Millisecond)
 	if err != nil {
 		return fmt.Errorf("Getting chain result failed with error: %s", err.Error())
 	}
@@ -259,7 +254,7 @@ func send() error {
 		return fmt.Errorf("Could not send task: %s", err.Error())
 	}
 
-	_, err = asyncResult.Get(time.Duration(time.Millisecond * 5))
+	_, err = asyncResult.Get(5 * time.Millisecond)
 	if err == nil {
 		return errors.New("Error should not be nil if task panicked")
 	}

@@ -3,9 +3,10 @@ package machinery_test
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/GetStream/machinery/v1"
 	"github.com/GetStream/machinery/v1/config"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestRegisterTasks(t *testing.T) {

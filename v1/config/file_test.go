@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/GetStream/machinery/v1/config"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/GetStream/machinery/v1/config"
 )
 
 var configYAMLData = `---

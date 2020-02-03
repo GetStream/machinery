@@ -1,0 +1,60 @@
+run:
+  deadline: 210s
+
+linters:
+  disable-all: true
+  enable:
+    - deadcode
+    - dupl
+    # - errcheck # TODO: enable later
+    - gas
+    - goconst
+    - gocritic
+    - gocyclo
+    - gofmt
+    - goimports
+    - golint
+    - gosimple
+    - govet
+    - ineffassign
+    - misspell
+    - staticcheck
+    - unconvert
+    - unused
+    - varcheck
+
+linters-settings:
+  dupl:
+    # tokens count to trigger issue, 150 by default
+    threshold: 200 # TODO: try to reduce it
+  goconst:
+    min-len: 5
+    min-occurrences: 5
+  gocyclo:
+    # minimal code complexity to report, 30 by default (but we recommend 10-20)
+    min-complexity: 55 # TODO: try to reduce it to 15
+  gofmt:
+    simplify: true
+  goimports:
+    local-prefixes: github.com/GetStream/machinery
+  gocritic:
+    disabled-checks:
+      - whyNoLint
+    enabled-tags:
+      - diagnostic
+      - experimental
+      - opinionated
+      - performance
+      - style
+    settings:
+      hugeParam:
+        sizeThreshold: 364
+      rangeValCopy:
+        sizeThreshold: 364
+        skipTestFuncs: true
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - dupl
+        - errcheck # TODO: enable this later - heavy in use for defers

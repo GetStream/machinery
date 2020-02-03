@@ -32,7 +32,7 @@ var (
 	}
 )
 
-// ErrUnsupportedType ...
+// ErrUnsupportedType is an error for unsupported types
 type ErrUnsupportedType struct {
 	valueType string
 }

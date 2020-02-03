@@ -5,10 +5,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/GetStream/machinery/v1/backends"
 	"github.com/GetStream/machinery/v1/config"
 	"github.com/GetStream/machinery/v1/tasks"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestGroupCompletedMemcache(t *testing.T) {
