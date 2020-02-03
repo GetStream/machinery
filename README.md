@@ -5,43 +5,39 @@
 
 Machinery is an asynchronous task queue/job queue based on distributed message passing.
 
-[![Travis Status for RichardKnop/machinery](https://travis-ci.org/GetStream/machinery.svg?branch=master&label=linux+build)](https://travis-ci.org/GetStream/machinery)
-[![godoc for RichardKnop/machinery](https://godoc.org/github.com/nathany/looper?status.svg)](http://godoc.org/github.com/GetStream/machinery/v1)
-[![goreportcard for RichardKnop/machinery](https://goreportcard.com/badge/github.com/GetStream/machinery)](https://goreportcard.com/report/GetStream/machinery)
-[![codecov for RichardKnop/machinery](https://codecov.io/gh/GetStream/machinery/branch/master/graph/badge.svg)](https://codecov.io/gh/GetStream/machinery)
-[![Codeship Status for RichardKnop/machinery](https://app.codeship.com/projects/35dc5880-71a7-0133-ec05-06b1c29ec1d7/status?branch=master)](https://app.codeship.com/projects/116961)
-
-[![Sourcegraph for RichardKnop/machinery](https://sourcegraph.com/github.com/GetStream/machinery/-/badge.svg)](https://sourcegraph.com/github.com/GetStream/machinery?badge)
-[![Donate Bitcoin](https://img.shields.io/badge/donate-bitcoin-orange.svg)](https://GetStream.github.io/donate/)
+[![build](https://github.com/GetStream/machinery/workflows/build/badge.svg)](https://github.com/GetStream/machinery/actions)
+[![GoDoc](http://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](https://godoc.org/github.com/GetStream/machinery)
+[![goreportcard](https://goreportcard.com/badge/github.com/GetStream/machinery)](https://goreportcard.com/report/GetStream/machinery)
+[![codecov](https://codecov.io/gh/GetStream/machinery/branch/master/graph/badge.svg)](https://codecov.io/gh/GetStream/machinery)
 
 ---
 
-* [First Steps](#first-steps)
-* [Configuration](#configuration)
-* [Custom Logger](#custom-logger)
-* [Server](#server)
-* [Workers](#workers)
-* [Tasks](#tasks)
-  * [Registering Tasks](#registering-tasks)
-  * [Signatures](#signatures)
-  * [Supported Types](#supported-types)
-  * [Sending Tasks](#sending-tasks)
-  * [Delayed Tasks](#delayed-tasks)
-  * [Retry Tasks](#retry-tasks)
-  * [Get Pending Tasks](#get-pending-tasks)
-  * [Keeping Results](#keeping-results)
-* [Workflows](#workflows)
-  * [Groups](#groups)
-  * [Chords](#chords)
-  * [Chains](#chains)
-* [Development](#development)
-  * [Requirements](#requirements)
-  * [Dependencies](#dependencies)
-  * [Testing](#testing)
+- [First Steps](#first-steps)
+- [Configuration](#configuration)
+- [Custom Logger](#custom-logger)
+- [Server](#server)
+- [Workers](#workers)
+- [Tasks](#tasks)
+  - [Registering Tasks](#registering-tasks)
+  - [Signatures](#signatures)
+  - [Supported Types](#supported-types)
+  - [Sending Tasks](#sending-tasks)
+  - [Delayed Tasks](#delayed-tasks)
+  - [Retry Tasks](#retry-tasks)
+  - [Get Pending Tasks](#get-pending-tasks)
+  - [Keeping Results](#keeping-results)
+- [Workflows](#workflows)
+  - [Groups](#groups)
+  - [Chords](#chords)
+  - [Chains](#chains)
+- [Development](#development)
+  - [Requirements](#requirements)
+  - [Dependencies](#dependencies)
+  - [Testing](#testing)
 
 ### First Steps
 
-Add the Machinery library to your $GOPATH/src:
+Add the Machinery library to your \$GOPATH/src:
 
 ```sh
 go get github.com/GetStream/machinery/v1
@@ -188,11 +184,11 @@ How long to store task results for in seconds. Defaults to `3600` (1 hour).
 
 RabbitMQ related configuration. Not neccessarry if you are using other broker/backend.
 
-* `Exchange`: exchange name, e.g. `machinery_exchange`
-* `ExchangeType`: exchange type, e.g. `direct`
-* `QueueBindingArguments`: an optional map of additional arguments used when binding to an AMQP queue
-* `BindingKey`: The queue is bind to the exchange with this key, e.g. `machinery_task`
-* `PrefetchCount`: How many tasks to prefetch (set to `1` if you have long running tasks)
+- `Exchange`: exchange name, e.g. `machinery_exchange`
+- `ExchangeType`: exchange type, e.g. `direct`
+- `QueueBindingArguments`: an optional map of additional arguments used when binding to an AMQP queue
+- `BindingKey`: The queue is bind to the exchange with this key, e.g. `machinery_task`
+- `PrefetchCount`: How many tasks to prefetch (set to `1` if you have long running tasks)
 
 ### Custom Logger
 
@@ -336,11 +332,11 @@ Simply put, when a worker receives a message like this:
   "Args": [
     {
       "Type": "int64",
-      "Value": 1,
+      "Value": 1
     },
     {
       "Type": "int64",
-      "Value": 1,
+      "Value": 1
     }
   ],
   "Immutable": false,
@@ -395,7 +391,7 @@ type Signature struct {
 
 `RoutingKey` is used for routing a task to correct queue. If you leave it empty, the default behaviour will be to set it to the default queue's binding key for direct exchange type and to the default queue name for other exchange types.
 
-`ETA` is  a timestamp used for delaying a task. if it's nil, the task will be published for workers to consume immediately. If it is set, the task will be delayed until the ETA timestamp.
+`ETA` is a timestamp used for delaying a task. if it's nil, the task will be published for workers to consume immediately. If it is set, the task will be delayed until the ETA timestamp.
 
 `GroupUUID`, GroupTaskCount are useful for creating groups of tasks.
 
@@ -419,20 +415,20 @@ type Signature struct {
 
 Machinery encodes tasks to JSON before sending them to the broker. Task results are also stored in the backend as JSON encoded strings. Therefor only types with native JSON representation can be supported. Currently supported types are:
 
-* `bool`
-* `int`
-* `int8`
-* `int16`
-* `int32`
-* `int64`
-* `uint`
-* `uint8`
-* `uint16`
-* `uint32`
-* `uint64`
-* `float32`
-* `float64`
-* `string`
+- `bool`
+- `int`
+- `int8`
+- `int16`
+- `int32`
+- `int64`
+- `uint`
+- `uint8`
+- `uint16`
+- `uint32`
+- `uint64`
+- `float32`
+- `float64`
+- `string`
 
 #### Sending Tasks
 
@@ -803,11 +799,11 @@ for _, result := range results {
 
 #### Requirements
 
-* Go
-* RabbitMQ
-* Redis (optional)
-* Memcached (optional)
-* MongoDB (optional)
+- Go
+- RabbitMQ
+- Redis (optional)
+- Memcached (optional)
+- MongoDB (optional)
 
 On OS X systems, you can install requirements using [Homebrew](http://brew.sh/):
 
