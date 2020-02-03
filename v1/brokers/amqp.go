@@ -1,6 +1,7 @@
 package brokers
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -9,15 +10,14 @@ import (
 	"sync"
 	"time"
 
+	"github.com/GetStream/go-lzo"
+	"github.com/streadway/amqp"
 	"golang.org/x/sync/semaphore"
 
 	"github.com/GetStream/machinery/v1/common"
 	"github.com/GetStream/machinery/v1/config"
 	"github.com/GetStream/machinery/v1/log"
 	"github.com/GetStream/machinery/v1/tasks"
-	"github.com/streadway/amqp"
-	"github.com/GetStream/go-lzo"
-	"bytes"
 )
 
 const encodingLZO = "lzo"
@@ -36,7 +36,6 @@ func NewAMQPBroker(cnf *config.Config) Interface {
 	}
 }
 
-
 func (b *AMQPBroker) shouldCompress(payload []byte) bool {
 	return len(payload) > 100
 }
@@ -46,14 +45,14 @@ func (b *AMQPBroker) StartConsuming(consumerTag string, concurrency int, taskPro
 	b.startConsuming(consumerTag, taskProcessor)
 
 	channel, queue, _, err := b.Exchange(
-		b.cnf.AMQP.Exchange,     // exchange name
-		b.cnf.AMQP.ExchangeType, // exchange type
-		b.cnf.DefaultQueue,      // queue name
-		true,                    // queue durable
-		false,                   // queue delete when unused
-		b.cnf.AMQP.BindingKey, // queue binding key
-		nil, // exchange declare args
-		nil, // queue declare args
+		b.cnf.AMQP.Exchange,                     // exchange name
+		b.cnf.AMQP.ExchangeType,                 // exchange type
+		b.cnf.DefaultQueue,                      // queue name
+		true,                                    // queue durable
+		false,                                   // queue delete when unused
+		b.cnf.AMQP.BindingKey,                   // queue binding key
+		nil,                                     // exchange declare args
+		nil,                                     // queue declare args
 		amqp.Table(b.cnf.AMQP.QueueBindingArgs), // queue binding args
 	)
 	if err != nil {
@@ -121,14 +120,14 @@ func (b *AMQPBroker) Publish(signature *tasks.Signature) error {
 	compressed := b.shouldCompress(message)
 
 	channel, _, confirmsChan, err := b.Exchange(
-		b.cnf.AMQP.Exchange,     // exchange name
-		b.cnf.AMQP.ExchangeType, // exchange type
-		b.cnf.DefaultQueue,      // queue name
-		true,                    // queue durable
-		false,                   // queue delete when unused
-		b.cnf.AMQP.BindingKey, // queue binding key
-		nil, // exchange declare args
-		nil, // queue declare args
+		b.cnf.AMQP.Exchange,                     // exchange name
+		b.cnf.AMQP.ExchangeType,                 // exchange type
+		b.cnf.DefaultQueue,                      // queue name
+		true,                                    // queue durable
+		false,                                   // queue delete when unused
+		b.cnf.AMQP.BindingKey,                   // queue binding key
+		nil,                                     // exchange declare args
+		nil,                                     // queue declare args
 		amqp.Table(b.cnf.AMQP.QueueBindingArgs), // queue binding args
 	)
 	if err != nil {
@@ -212,17 +211,9 @@ func (b *AMQPBroker) consume(deliveries <-chan amqp.Delivery, concurrency int, t
 				pool.Release(1)
 
 				if err != nil {
-					for {
-						select {
-						case <-quitChan:
-							// main loop exited; ignoring error
-							return
-						case errorsChan <- err:
-							// propagated error to main loop
-							return
-						default:
-							// everything is blocked can't do anything but spin
-						}
+					select {
+					case <-quitChan: // main loop exited; ignoring error
+					case errorsChan <- err: // propagated error to main loop
 					}
 				}
 			}()
