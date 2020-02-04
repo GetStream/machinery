@@ -87,7 +87,7 @@ func (b *RedisBackend) GroupCompleted(groupUUID string, groupTaskCount int) (boo
 func (b *RedisBackend) GroupTaskStates(groupUUID string, groupTaskCount int) ([]*tasks.TaskState, error) {
 	groupMeta, err := b.getGroupMeta(groupUUID)
 	if err != nil {
-		return []*tasks.TaskState{}, err
+		return nil, err
 	}
 
 	return b.getStates(groupMeta.TaskUUIDs...)
@@ -127,11 +127,7 @@ func (b *RedisBackend) TriggerChord(groupUUID string) (bool, error) {
 	}
 
 	_, err = conn.Do("SET", groupUUID, encoded)
-	if err != nil {
-		return false, err
-	}
-
-	return true, nil
+	return err == nil, err
 }
 
 // SetStatePending updates task state to PENDING
@@ -194,11 +190,7 @@ func (b *RedisBackend) PurgeState(taskUUID string) error {
 	defer conn.Close()
 
 	_, err := conn.Do("DEL", taskUUID)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 // PurgeGroupMeta deletes stored group meta data
@@ -207,11 +199,7 @@ func (b *RedisBackend) PurgeGroupMeta(groupUUID string) error {
 	defer conn.Close()
 
 	_, err := conn.Do("DEL", groupUUID)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 // getGroupMeta retrieves group meta data, convenience function to avoid repetition
@@ -299,11 +287,7 @@ func (b *RedisBackend) setExpirationTime(key string) error {
 	defer conn.Close()
 
 	_, err := conn.Do("EXPIREAT", key, expirationTimestamp)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 // open returns or creates instance of Redis connection
