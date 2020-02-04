@@ -71,7 +71,7 @@ func (b *MemcacheBackend) GroupCompleted(groupUUID string, groupTaskCount int) (
 func (b *MemcacheBackend) GroupTaskStates(groupUUID string, groupTaskCount int) ([]*tasks.TaskState, error) {
 	groupMeta, err := b.getGroupMeta(groupUUID)
 	if err != nil {
-		return []*tasks.TaskState{}, err
+		return nil, err
 	}
 
 	return b.getStates(groupMeta.TaskUUIDs...)

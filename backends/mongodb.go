@@ -63,7 +63,7 @@ func (b *MongodbBackend) GroupCompleted(groupUUID string, groupTaskCount int) (b
 func (b *MongodbBackend) GroupTaskStates(groupUUID string, groupTaskCount int) ([]*tasks.TaskState, error) {
 	groupMeta, err := b.getGroupMeta(groupUUID)
 	if err != nil {
-		return []*tasks.TaskState{}, err
+		return nil, err
 	}
 
 	return b.getStates(groupMeta.TaskUUIDs...)
@@ -247,10 +247,7 @@ func (b *MongodbBackend) updateState(signature *tasks.Signature, update bson.M) 
 
 	update = bson.M{"$set": update}
 	_, err := b.tasksCollection.UpsertId(signature.UUID, update)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 // connect returns a session if we are already connected to mongo, otherwise

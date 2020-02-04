@@ -27,7 +27,7 @@ func (rc *RedisConnector) NewPool(socketPath, host, password string, db int) *re
 			if err != nil {
 				return nil, err
 			}
-			return c, err
+			return c, nil
 		},
 		// PINGs connections that have been idle more than 10 seconds
 		TestOnBorrow: func(c redis.Conn, t time.Time) error {
