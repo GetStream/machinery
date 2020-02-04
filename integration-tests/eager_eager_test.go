@@ -7,9 +7,9 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
-	"github.com/GetStream/machinery/v1"
-	"github.com/GetStream/machinery/v1/config"
-	"github.com/GetStream/machinery/v1/tasks"
+	"github.com/GetStream/machinery"
+	"github.com/GetStream/machinery/config"
+	"github.com/GetStream/machinery/tasks"
 )
 
 type EagerIntegrationTestSuite struct {
