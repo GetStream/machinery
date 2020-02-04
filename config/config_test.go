@@ -1,0 +1,21 @@
+package config_test
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/GetStream/machinery/config"
+)
+
+func TestRefreshConfig(t *testing.T) {
+	config.Reset()
+
+	cnf := config.NewFromEnvironment(true, false)
+
+	config.Refresh(&config.Config{Broker: "foo"})
+	assert.Equal(t, "foo", cnf.Broker)
+
+	config.Refresh(&config.Config{Broker: "bar"})
+	assert.Equal(t, "bar", cnf.Broker)
+}

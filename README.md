@@ -37,10 +37,10 @@ Machinery is an asynchronous task queue/job queue based on distributed message p
 
 ### First Steps
 
-Add the Machinery library to your \$GOPATH/src:
+Add the Machinery library:
 
 ```sh
-go get github.com/GetStream/machinery/v1
+go get github.com/GetStream/machinery
 ```
 
 First, you will need to define some tasks. Look at sample tasks in `example/tasks/tasks.go` to see a few examples.
@@ -210,7 +210,7 @@ type Interface interface {
 }
 ```
 
-Then just set the logger in your setup code by calling `Set` function exported by `github.com/GetStream/machinery/v1/log` package:
+Then just set the logger in your setup code by calling `Set` function exported by `github.com/GetStream/machinery/log` package:
 
 ```go
 log.Set(myCustomLogger)
@@ -222,8 +222,8 @@ A Machinery library must be instantiated before use. The way this is done is by 
 
 ```go
 import (
-  "github.com/GetStream/machinery/v1/config"
-  "github.com/GetStream/machinery/v1"
+  "github.com/GetStream/machinery/config"
+  "github.com/GetStream/machinery"
 )
 
 var cnf = &config.Config{
@@ -436,7 +436,7 @@ Tasks can be called by passing an instance of `Signature` to an `Server` instanc
 
 ```go
 import (
-  "github.com/GetStream/machinery/v1/tasks"
+  "github.com/GetStream/machinery/tasks"
 )
 
 signature := &tasks.Signature{
@@ -583,8 +583,8 @@ Running a single asynchronous task is fine but often you will want to design a w
 
 ```go
 import (
-  "github.com/GetStream/machinery/v1/tasks"
-  "github.com/GetStream/machinery/v1"
+  "github.com/GetStream/machinery/tasks"
+  "github.com/GetStream/machinery"
 )
 
 signature1 := tasks.Signature{
@@ -644,8 +644,8 @@ for _, asyncResult := range asyncResults {
 
 ```go
 import (
-  "github.com/GetStream/machinery/v1/tasks"
-  "github.com/GetStream/machinery/v1"
+  "github.com/GetStream/machinery/tasks"
+  "github.com/GetStream/machinery"
 )
 
 signature1 := tasks.Signature{
@@ -720,8 +720,8 @@ for _, result := range results {
 
 ```go
 import (
-  "github.com/GetStream/machinery/v1/tasks"
-  "github.com/GetStream/machinery/v1"
+  "github.com/GetStream/machinery/tasks"
+  "github.com/GetStream/machinery"
 )
 
 signature1 := tasks.Signature{

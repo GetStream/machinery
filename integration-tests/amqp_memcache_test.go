@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/GetStream/machinery/v1/config"
+	"github.com/GetStream/machinery/config"
 )
 
 func TestAmqpMemcache(t *testing.T) {

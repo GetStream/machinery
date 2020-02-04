@@ -8,11 +8,11 @@ import (
 
 	"github.com/urfave/cli"
 
+	"github.com/GetStream/machinery"
+	"github.com/GetStream/machinery/config"
 	exampletasks "github.com/GetStream/machinery/example/tasks"
-	"github.com/GetStream/machinery/v1"
-	"github.com/GetStream/machinery/v1/config"
-	"github.com/GetStream/machinery/v1/log"
-	"github.com/GetStream/machinery/v1/tasks"
+	"github.com/GetStream/machinery/log"
+	"github.com/GetStream/machinery/tasks"
 )
 
 var (
