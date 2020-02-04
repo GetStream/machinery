@@ -17,6 +17,11 @@ jobs:
       - name: Check out code into the Go module directory
         uses: actions/checkout@v2
 
+      - name: Set GOBIN and add to PATH
+        run: |
+          go env -w GOBIN=$(go env GOPATH/bin)
+          echo "::add-path::$(go env GOBIN)"
+
       - name: Lint and Test via ${{ matrix.goVer }}
         run: |
           go mod tidy -v && git diff --no-patch --exit-code
