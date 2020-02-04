@@ -4,7 +4,7 @@ import (
 	"errors"
 )
 
-// Add ...
+// Add is a sample task
 func Add(args ...int64) (int64, error) {
 	sum := int64(0)
 	for _, arg := range args {
@@ -13,7 +13,7 @@ func Add(args ...int64) (int64, error) {
 	return sum, nil
 }
 
-// Multiply ...
+// Multiply is a sample task
 func Multiply(args ...int64) (int64, error) {
 	sum := int64(1)
 	for _, arg := range args {
@@ -22,7 +22,7 @@ func Multiply(args ...int64) (int64, error) {
 	return sum, nil
 }
 
-// PanicTask ...
+// PanicTask is a sample task
 func PanicTask() (string, error) {
 	panic(errors.New("oops"))
 }

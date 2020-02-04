@@ -51,9 +51,9 @@ func NewChordAsyncResult(groupTasks []*tasks.Signature, chordCallback *tasks.Sig
 }
 
 // NewChainAsyncResult creates ChainAsyncResult instance
-func NewChainAsyncResult(tasks []*tasks.Signature, backend Interface) *ChainAsyncResult {
-	asyncResults := make([]*AsyncResult, len(tasks))
-	for i, task := range tasks {
+func NewChainAsyncResult(sigs []*tasks.Signature, backend Interface) *ChainAsyncResult {
+	asyncResults := make([]*AsyncResult, len(sigs))
+	for i, task := range sigs {
 		asyncResults[i] = NewAsyncResult(task, backend)
 	}
 	return &ChainAsyncResult{

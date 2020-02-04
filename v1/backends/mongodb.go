@@ -3,11 +3,12 @@ package backends
 import (
 	"time"
 
+	mgo "gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
+
 	"github.com/GetStream/machinery/v1/config"
 	"github.com/GetStream/machinery/v1/log"
 	"github.com/GetStream/machinery/v1/tasks"
-	mgo "gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 )
 
 // MongodbBackend represents a MongoDB result backend
@@ -92,11 +93,11 @@ func (b *MongodbBackend) TriggerChord(groupUUID string) (bool, error) {
 	for groupMeta.Lock {
 		groupMeta, _ = b.getGroupMeta(groupUUID)
 		log.WARNING.Print("Group meta locked, waiting")
-		<-time.After(time.Millisecond * 5)
+		<-time.After(5 * time.Millisecond)
 	}
 
 	// Acquire lock
-	if err = b.lockGroupMeta(groupUUID); err != nil {
+	if err := b.lockGroupMeta(groupUUID); err != nil {
 		return false, err
 	}
 	defer b.unlockGroupMeta(groupUUID)

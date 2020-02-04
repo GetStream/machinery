@@ -1,11 +1,10 @@
 package tasks
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"reflect"
-
-	"context"
 
 	"github.com/GetStream/machinery/v1/log"
 )

@@ -19,11 +19,12 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/streadway/amqp"
+
 	"github.com/GetStream/machinery/v1/common"
 	"github.com/GetStream/machinery/v1/config"
 	"github.com/GetStream/machinery/v1/log"
 	"github.com/GetStream/machinery/v1/tasks"
-	"github.com/streadway/amqp"
 )
 
 // AMQPBackend represents an AMQP result backend
@@ -99,7 +100,7 @@ func (b *AMQPBackend) GroupTaskStates(groupUUID string, groupTaskCount int) ([]*
 
 		state := new(tasks.TaskState)
 
-		if err := json.Unmarshal([]byte(d.Body), state); err != nil {
+		if err := json.Unmarshal(d.Body, state); err != nil {
 			d.Nack(false, false) // multiple, requeue
 			return nil, err
 		}
@@ -124,11 +125,7 @@ func (b *AMQPBackend) TriggerChord(groupUUID string) (bool, error) {
 	defer channel.Close()
 
 	_, err = b.InspectQueue(channel, amqmChordTriggeredQueue(groupUUID))
-	if err != nil {
-		return true, nil
-	}
-
-	return false, nil
+	return err != nil, nil
 }
 
 // SetStatePending updates task state to PENDING
@@ -225,7 +222,7 @@ func (b *AMQPBackend) GetState(taskUUID string) (*tasks.TaskState, error) {
 	d.Ack(false)
 
 	state := new(tasks.TaskState)
-	if err := json.Unmarshal([]byte(d.Body), state); err != nil {
+	if err := json.Unmarshal(d.Body, state); err != nil {
 		log.ERROR.Printf("Failed to unmarshal task state: %s (%v)", string(d.Body), err)
 		return nil, err
 	}

@@ -3,8 +3,9 @@ package config
 import (
 	"time"
 
-	"github.com/GetStream/machinery/v1/log"
 	"github.com/kelseyhightower/envconfig"
+
+	"github.com/GetStream/machinery/v1/log"
 )
 
 // NewFromEnvironment creates a config object from environment variables
@@ -55,8 +56,7 @@ func NewFromEnvironment(mustLoadOnce, keepReloading bool) *Config {
 }
 
 func fromEnvironment() (*Config, error) {
-	var newCnf Config
-	newCnf = *cnf
+	newCnf := *cnf
 
 	if err := envconfig.Process("", &newCnf); err != nil {
 		return nil, err

@@ -3,8 +3,6 @@ package integration_test
 import (
 	"fmt"
 	"os"
-	"reflect"
-	"sort"
 	"testing"
 	"time"
 
@@ -100,7 +98,7 @@ func TestWorkerOnlyConsumesRegisteredTaskAMQP(t *testing.T) {
 	actualResults := make([]int64, 2)
 
 	for i, asyncResult := range asyncResults {
-		results, err := asyncResult.Get(time.Duration(time.Millisecond * 5))
+		results, err := asyncResult.Get(5 * time.Millisecond)
 		if err != nil {
 			t.Error(err)
 		}
@@ -119,15 +117,7 @@ func TestWorkerOnlyConsumesRegisteredTaskAMQP(t *testing.T) {
 	worker1.Quit()
 	worker2.Quit()
 
-	sort.Sort(ascendingInt64s(actualResults))
-
-	if !reflect.DeepEqual(expectedResults, actualResults) {
-		t.Errorf(
-			"expected results = %v, actual results = %v",
-			expectedResults,
-			actualResults,
-		)
-	}
+	requireSortedEqual(t, expectedResults, actualResults)
 }
 
 func TestWorkerOnlyConsumesRegisteredTaskRedis(t *testing.T) {
@@ -211,7 +201,7 @@ func TestWorkerOnlyConsumesRegisteredTaskRedis(t *testing.T) {
 	actualResults := make([]int64, 2)
 
 	for i, asyncResult := range asyncResults {
-		results, err := asyncResult.Get(time.Duration(time.Millisecond * 5))
+		results, err := asyncResult.Get(5 * time.Millisecond)
 		if err != nil {
 			t.Error(err)
 		}
@@ -230,13 +220,5 @@ func TestWorkerOnlyConsumesRegisteredTaskRedis(t *testing.T) {
 	worker1.Quit()
 	worker2.Quit()
 
-	sort.Sort(ascendingInt64s(actualResults))
-
-	if !reflect.DeepEqual(expectedResults, actualResults) {
-		t.Errorf(
-			"expected results = %v, actual results = %v",
-			expectedResults,
-			actualResults,
-		)
-	}
+	requireSortedEqual(t, expectedResults, actualResults)
 }

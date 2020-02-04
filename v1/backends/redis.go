@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/garyburd/redigo/redis"
+	"github.com/go-redsync/redsync"
+
 	"github.com/GetStream/machinery/v1/common"
 	"github.com/GetStream/machinery/v1/config"
 	"github.com/GetStream/machinery/v1/log"
 	"github.com/GetStream/machinery/v1/tasks"
-	"github.com/garyburd/redigo/redis"
-	"github.com/go-redsync/redsync"
 )
 
 // RedisBackend represents a Memcache result backend

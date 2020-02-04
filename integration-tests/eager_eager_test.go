@@ -5,10 +5,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/suite"
+
 	"github.com/GetStream/machinery/v1"
 	"github.com/GetStream/machinery/v1/config"
 	"github.com/GetStream/machinery/v1/tasks"
-	"github.com/stretchr/testify/suite"
 )
 
 type EagerIntegrationTestSuite struct {
@@ -84,7 +85,7 @@ func (s *EagerIntegrationTestSuite) TestSuccessResult() {
 		s.True(asyncResult.GetState().IsCompleted())
 		s.True(asyncResult.GetState().IsSuccess())
 
-		results, err := asyncResult.Get(time.Duration(time.Millisecond * 5))
+		results, err := asyncResult.Get(5 * time.Millisecond)
 		s.Nil(err)
 
 		if len(results) != 1 {
@@ -115,7 +116,7 @@ func (s *EagerIntegrationTestSuite) TestSuccessResult() {
 		s.True(asyncResult.GetState().IsCompleted())
 		s.True(asyncResult.GetState().IsSuccess())
 
-		results, err := asyncResult.Get(time.Duration(time.Millisecond * 5))
+		results, err := asyncResult.Get(5 * time.Millisecond)
 		s.Nil(err)
 
 		if len(results) != 1 {

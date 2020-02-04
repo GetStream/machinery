@@ -3,9 +3,10 @@ package backends_test
 import (
 	"testing"
 
+	"github.com/stretchr/testify/suite"
+
 	"github.com/GetStream/machinery/v1/backends"
 	"github.com/GetStream/machinery/v1/tasks"
-	"github.com/stretchr/testify/suite"
 )
 
 type EagerBackendTestSuite struct {
@@ -164,10 +165,8 @@ func (s *EagerBackendTestSuite) TestGroupTaskStates() {
 		ts, err := s.backend.GroupTaskStates(g.id, len(g.tasks))
 		s.NotNil(ts)
 		s.Nil(err)
-		if ts != nil {
-			for _, t := range ts {
-				s.Equal(t.TaskUUID, t.Error)
-			}
+		for _, t := range ts {
+			s.Equal(t.TaskUUID, t.Error)
 		}
 	}
 
@@ -280,48 +279,40 @@ func (s *EagerBackendTestSuite) TestGetState() {
 
 func (s *EagerBackendTestSuite) TestPurgeState() {
 	// task6
-	{
-		t := s.st[5]
-		st, err := s.backend.GetState(t.UUID)
-		s.NotNil(st)
-		s.Nil(err)
+	t := s.st[5]
+	st, err := s.backend.GetState(t.UUID)
+	s.NotNil(st)
+	s.Nil(err)
 
-		// purge it
-		s.Nil(s.backend.PurgeState(t.UUID))
+	// purge it
+	s.Nil(s.backend.PurgeState(t.UUID))
 
-		// should be not found
-		st, err = s.backend.GetState(t.UUID)
-		s.Nil(st)
-		s.NotNil(err)
-	}
+	// should be not found
+	st, err = s.backend.GetState(t.UUID)
+	s.Nil(st)
+	s.NotNil(err)
 
-	{
-		// purge a not-existed state
-		s.NotNil(s.backend.PurgeState(""))
-	}
+	// purge a not-existed state
+	s.NotNil(s.backend.PurgeState(""))
 }
 
 func (s *EagerBackendTestSuite) TestPurgeGroupMeta() {
 	// group4
-	{
-		g := s.groups[3]
-		ts, err := s.backend.GroupTaskStates(g.id, len(g.tasks))
-		s.NotNil(ts)
-		s.Nil(err)
+	g := s.groups[3]
+	ts, err := s.backend.GroupTaskStates(g.id, len(g.tasks))
+	s.NotNil(ts)
+	s.Nil(err)
 
-		// purge group
-		s.Nil(s.backend.PurgeGroupMeta(g.id))
+	// purge group
+	s.Nil(s.backend.PurgeGroupMeta(g.id))
 
-		// should be not found
-		ts, err = s.backend.GroupTaskStates(g.id, len(g.tasks))
-		s.Nil(ts)
-		s.NotNil(err)
-	}
+	// should be not found
+	ts, err = s.backend.GroupTaskStates(g.id, len(g.tasks))
+	s.Nil(ts)
+	s.NotNil(err)
 
-	{
-		// purge a not-existed group
-		s.NotNil(s.backend.PurgeGroupMeta(""))
-	}
+	// purge a not-existed group
+	s.NotNil(s.backend.PurgeGroupMeta(""))
 }
 
 //
