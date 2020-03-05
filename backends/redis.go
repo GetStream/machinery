@@ -16,6 +16,7 @@ import (
 
 // RedisBackend represents a Memcache result backend
 type RedisBackend struct {
+	common.RedisConnector
 	cnf      *config.Config
 	host     string
 	password string
@@ -24,7 +25,6 @@ type RedisBackend struct {
 	// If set, path to a socket file overrides hostname
 	socketPath string
 	redsync    *redsync.Redsync
-	common.RedisConnector
 }
 
 // NewRedisBackend creates RedisBackend instance

@@ -19,6 +19,7 @@ var redisDelayedTasksKey = "delayed_tasks"
 
 // RedisBroker represents a Redis broker
 type RedisBroker struct {
+	common.RedisConnector
 	host              string
 	password          string
 	db                int
@@ -31,7 +32,6 @@ type RedisBroker struct {
 	socketPath string
 	redsync    *redsync.Redsync
 	Broker
-	common.RedisConnector
 }
 
 // NewRedisBroker creates new RedisBroker instance
