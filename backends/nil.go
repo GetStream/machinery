@@ -2,6 +2,8 @@ package backends
 
 import "github.com/GetStream/machinery/tasks"
 
+var _ Interface = Nil{}
+
 type Nil struct{}
 
 func (Nil) InitGroup(groupUUID string, taskUUIDs []string) error {
