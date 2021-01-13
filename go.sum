@@ -1,5 +1,5 @@
-github.com/GetStream/go-lzo v0.1.0 h1:w/EEKF0JXNTDf+Bo8sTLyC9MhvqMtXg2UCf3GOb7Jz4=
-github.com/GetStream/go-lzo v0.1.0/go.mod h1:okOX50EXkxlHzfJsxWI8JuyMxVTZF8w7cry5sY6fE0A=
+github.com/GetStream/go-lzo v0.1.1 h1:FNQLEN72nRF5vDU+8p2jPBBRlj6dHvtsmxhSluj45kI=
+github.com/GetStream/go-lzo v0.1.1/go.mod h1:okOX50EXkxlHzfJsxWI8JuyMxVTZF8w7cry5sY6fE0A=
 github.com/RichardKnop/logging v0.0.0-20171219150333-66aaaba18258 h1:HDg14QRScUCSAFBFHM62YHJTj9JXapEWHsAmWCynYOE=
 github.com/RichardKnop/logging v0.0.0-20171219150333-66aaaba18258/go.mod h1:GN1ovZ77t2jiz0kTaWhgtQe271GODCgheqxlxGt7wIo=
 github.com/bradfitz/gomemcache v0.0.0-20170208213004-1952afaa557d h1:7IjN4QP3c38xhg6wz8R3YjoU+6S9e7xBc0DAVLLIpHE=

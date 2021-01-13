@@ -3,7 +3,7 @@ module github.com/GetStream/machinery
 go 1.13
 
 require (
-	github.com/GetStream/go-lzo v0.1.0
+	github.com/GetStream/go-lzo v0.1.1
 	github.com/RichardKnop/logging v0.0.0-20171219150333-66aaaba18258
 	github.com/bradfitz/gomemcache v0.0.0-20170208213004-1952afaa557d
 	github.com/garyburd/redigo v1.4.0

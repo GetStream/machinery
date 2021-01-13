@@ -8,6 +8,7 @@ linters:
     - dupl
     # - errcheck # TODO: enable later
     - gas
+    - gci
     - goconst
     - gocritic
     - gocyclo
